@@ -13,10 +13,10 @@ class Downloader
     private $project;
 
     /** @var Mapping[] */
-    private $mappings = [];
+    private $mappings = array();
 
     /** @var array $localeFormat */
-    private $localeFormat = [];
+    private $localeFormat = array();
 
     /**
      * @param Client $client
