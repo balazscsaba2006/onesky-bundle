@@ -13,16 +13,21 @@ class Downloader
     private $project;
 
     /** @var Mapping[] */
-    private $mappings = array();
+    private $mappings = [];
+
+    /** @var array $localeFormat */
+    private $localeFormat = [];
 
     /**
      * @param Client $client
      * @param int    $project
+     * @param array  $localeFormat
      */
-    public function __construct(Client $client, $project)
+    public function __construct(Client $client, $project, $localeFormat)
     {
         $this->client = $client;
         $this->project = $project;
+        $this->localeFormat = $localeFormat;
     }
 
     /**
@@ -56,11 +61,25 @@ class Downloader
      */
     private function getAllLocales()
     {
-        $raw = $this->client->projects('languages', array('project_id' => $this->project));
+        $raw = $this->client->projects('languages', ['project_id' => $this->project]);
         $response = json_decode($raw, true);
         $data = $response['data'];
 
-        return array_map(function ($item) { return $item['locale']; }, $data);
+        return array_map(function ($item) {
+            return $this->formatLocale($item);
+        }, $data);
+    }
+
+    /**
+     * @param array $locale
+     *
+     * @return string
+     */
+    private function formatLocale(array $locale = array())
+    {
+        $intersect = array_intersect_key($locale, array_flip($this->localeFormat['parts']));
+
+        return (count($intersect)) ? implode($this->localeFormat['separator'], $intersect) : null;
     }
 
     /**
@@ -68,11 +87,13 @@ class Downloader
      */
     private function getAllSources()
     {
-        $raw = $this->client->files('list', array('project_id' => $this->project, 'per_page' => 100));
+        $raw = $this->client->files('list', ['project_id' => $this->project, 'per_page' => 100]);
         $response = json_decode($raw, true);
         $data = $response['data'];
 
-        return array_map(function ($item) { return $item['file_name']; }, $data);
+        return array_map(function ($item) {
+            return $item['file_name'];
+        }, $data);
     }
 
     /**
@@ -110,11 +131,11 @@ class Downloader
     {
         $content = $this->client->translations(
             'export',
-            array(
+            [
                 'project_id' => $this->project,
                 'locale' => $locale,
                 'source_file_name' => $source,
-            )
+            ]
         );
 
         return $content;

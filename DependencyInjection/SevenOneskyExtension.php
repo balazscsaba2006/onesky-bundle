@@ -60,6 +60,7 @@ class SevenOneskyExtension extends Extension
         $downloader = new Definition('Seven\Bundle\OneskyBundle\Onesky\Downloader', array(
             new Reference('seven_onesky_client'),
             $config['project'],
+            $config['locale_format']
         ));
 
         foreach ($config['mappings'] as $mappingConfig) {
